@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI AutoTrading</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary-color: #1a1a2e;
+            --secondary-color: #16213e;
+            --accent-color: #0fcc45;
+            --text-color: #ffffff;
+            --card-bg: #1e2a47;
+            --input-bg: #2d3b5c;
+            --border-color: #344563;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-color);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            padding-top: 10px;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+
+        .wallet-container {
+            position: absolute;
+            top: 0;
+            right: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .wallet-balance {
+            background-color: var(--card-bg);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .wallet-balance:hover {
+            background-color: #2a3657;
+        }
+
+        .balance-amount {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            background: none;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: var(--accent-color);
+            color: var(--text-color);
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--accent-color);
+        }
+
+        .assets-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .asset-option {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .asset-option:hover {
+            border-color: var(--accent-color);
+        }
+
+        .asset-option.selected {
+            border-color: var(--accent-color);
+            background-color: rgba(15, 204, 69, 0.1);
+        }
+
+        .asset-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .asset-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .asset-name {
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .asset-pair {
+            font-size: 0.7rem;
+            color: #a0a0a0;
+        }
+
+        .amount-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .amount-option {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .amount-option:hover {
+            border-color: var(--accent-color);
+        }
+
+        .amount-option.selected {
+            border-color: var(--accent-color);
+            background-color: rgba(15, 204, 69, 0.1);
+        }
+
+        .custom-amount {
+            grid-column: 1 / span 2;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .custom-amount input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            text-align: center;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .asset-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .asset-name-large {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .asset-pair-large {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+
+        .trade-values {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .trade-value {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .trade-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .control-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .multiplier-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .multiplier-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .multiplier-item.selected {
+            color: var(--accent-color);
+        }
+
+        .multiplier-value {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 12px;
+            text-align: center;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .multiplier-item.selected .multiplier-value {
+            border-color: var(--accent-color);
+            background-color: rgba(15, 204, 69, 0.1);
+        }
+
+        .multiplier-label {
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .multiplier-type {
+            font-size: 0.7rem;
+            color: #a0a0a0;
+        }
+
+        .time-controls {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .time-option {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.8rem;
+        }
+
+        .time-option:hover {
+            border-color: var(--accent-color);
+        }
+
+        .time-option.selected {
+            border-color: var(--accent-color);
+            background-color: rgba(15, 204, 69, 0.1);
+        }
+
+        .protection-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .session-profit {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .profit-amount {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-top: 5px;
+        }
+
+        .action-button {
+            width: 100%;
+            background-color: var(--accent-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .action-button:hover {
+            background-color: #0db33d;
+        }
+
+        .action-button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+        .login-prompt {
+            text-align: center;
+            margin-top: 20px;
+            color: #a0a0a0;
+        }
+
+        .login-link {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .login-form {
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            width: 100%;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        .currency-selector {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .currency-option {
+            padding: 8px 15px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+
+        .currency-option:first-child {
+            border-radius: 8px 0 0 8px;
+        }
+
+        .currency-option:last-child {
+            border-radius: 0 8px 8px 0;
+        }
+
+        .currency-option.selected {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-asset {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .history-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        .history-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .history-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .history-profit {
+            font-weight: bold;
+        }
+
+        .profit-positive {
+            color: var(--accent-color);
+        }
+
+        .profit-negative {
+            color: #ff4d4d;
+        }
+
+        .history-time {
+            font-size: 0.8rem;
+            color: #a0a0a0;
+        }
+
+        /* Notification Styles */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .notification {
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            max-width: 300px;
+            animation: slideIn 0.3s ease-out;
+            transition: transform 0.3s, opacity 0.3s;
+        }
+
+        .notification.success {
+            background-color: rgba(15, 204, 69, 0.9);
+            border-left: 4px solid #0db33d;
+        }
+
+        .notification.error {
+            background-color: rgba(255, 77, 77, 0.9);
+            border-left: 4px solid #ff3333;
+        }
+
+        .notification-icon {
+            font-size: 1.5rem;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .notification-message {
+            font-size: 0.9rem;
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background-color: var(--input-bg);
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--accent-color);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>AI Trading Moya</h1>
+            <p id="headerSubtitle">Conecte Sua Conta AI</p>
+        </div>
+
+        <!-- Currency Selector -->
+        <div class="currency-selector">
+            <div class="currency-option selected" data-currency="USD">USD</div>
+            <div class="currency-option" data-currency="BRL">BRL</div>
+            <div class="wallet-container">
+                <div class="wallet-balance" id="walletBalanceBtn">
+                    Saldo: <span class="balance-amount" id="walletBalance">USD 1,000.00</span>
+                </div>
+                <button class="logout-btn" id="logoutBtn" style="display: none;">Sair</button>
+            </div>
+        </div>
+
+        <!-- Trading Interface -->
+        <div id="tradingInterface">
+            <!-- Assets Selection -->
+            <div class="card">
+                <div class="section-title">Selecione o Ativo</div>
+                <div class="assets-grid" id="assetsGrid">
+                    <!-- Os ativos serão inseridos via JavaScript -->
+                </div>
+            </div>
+
+            <!-- Amount Selection Card -->
+            <div class="card">
+                <div class="section-title" id="amountTitle">USD 100</div>
+                <div class="amount-options">
+                    <div class="amount-option" data-amount="100">USD 100</div>
+                    <div class="amount-option" data-amount="250">USD 250</div>
+                    <div class="amount-option selected" data-amount="500">USD 500</div>
+                    <div class="amount-option" data-amount="1000">USD 1.000</div>
+                    <div class="custom-amount">
+                        <input type="text" placeholder="Personalizado" id="customAmount">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Asset Card -->
+            <div class="card">
+                <div class="asset-info">
+                    <div class="asset-name-large" id="selectedAssetName">BITCOIN</div>
+                    <div class="asset-pair-large" id="selectedAssetPair">Bitcoin/USD</div>
+                </div>
+
+                <div class="trade-values">
+                    <div class="trade-value" id="stopLossValue">USD 200</div>
+                    <div class="trade-value" id="stopWinValue">USD 200</div>
+                </div>
+
+                <div class="trade-controls">
+                    <div class="control-item">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="stopLossToggle">
+                            <span class="slider"></span>
+                        </label>
+                        <span>Ativar StopLoss</span>
+                    </div>
+                    <div class="control-item">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="stopWinToggle">
+                            <span class="slider"></span>
+                        </label>
+                        <span>Ativar StopWin</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Time Selection Card -->
+            <div class="card">
+                <div class="section-title">Tempo da Operação</div>
+                <div class="time-controls">
+                    <div class="time-option selected" data-time="30">30s</div>
+                    <div class="time-option" data-time="60">1m</div>
+                    <div class="time-option" data-time="300">5m</div>
+                    <div class="time-option" data-time="900">15m</div>
+                    <div class="time-option" data-time="1800">30m</div>
+                    <div class="time-option" data-time="3600">1h</div>
+                    <div class="time-option" data-time="14400">4h</div>
+                    <div class="time-option" data-time="14400">8h</div>
+                </div>
+            </div>
+
+            <!-- Multiplier Card -->
+            <div class="card">
+                <div class="section-title">Selecione o Multiplicador</div>
+                <div class="multiplier-controls">
+                    <div class="multiplier-item selected" data-multiplier="1">
+                        <div class="multiplier-label">Conservador</div>
+                        <div class="multiplier-type">Baixo Risco</div>
+                        <div class="multiplier-value">1x</div>
+                    </div>
+                    <div class="multiplier-item" data-multiplier="2">
+                        <div class="multiplier-label">Moderado</div>
+                        <div class="multiplier-type">Risco Médio</div>
+                        <div class="multiplier-value">2x</div>
+                    </div>
+                    <div class="multiplier-item" data-multiplier="30">
+                        <div class="multiplier-label">Arrojado</div>
+                        <div class="multiplier-type">Alto Risco</div>
+                        <div class="multiplier-value">30x</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Protection Card -->
+            <div class="card">
+                <div class="protection-toggle">
+                    <span>Ativar Proteções</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="protectionToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Session Profit -->
+            <div class="card">
+                <div class="session-profit">
+                    <div>Lucro da sessão</div>
+                    <div class="profit-amount" id="profitAmount">USD 0.00</div>
+                </div>
+            </div>
+
+            <!-- Action Button -->
+            <button class="action-button" id="actionButton">CONECTE SUA CONTA PRIMEIRO</button>
+        </div>
+
+        <!-- Login Form -->
+        <div class="login-form" id="loginForm">
+            <button class="back-button" id="backButton">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </button>
+
+            <div class="card">
+                <div class="section-title">Conectar Conta</div>
+                
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" class="form-control" placeholder="seu@email.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" class="form-control" placeholder="Sua senha">
+                </div>
+                
+                <button class="action-button" id="loginButton">CONECTAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Histórico de Operações</h2>
+                <button class="close-modal" id="closeModal">&times;</button>
+            </div>
+            <div id="historyList">
+                <!-- Histórico será inserido aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div class="notification-container" id="notificationContainer"></div>
+
+    <script>
+        // DOM Elements
+        const tradingInterface = document.getElementById('tradingInterface');
+        const loginForm = document.getElementById('loginForm');
+        const actionButton = document.getElementById('actionButton');
+        const loginButton = document.getElementById('loginButton');
+        const backButton = document.getElementById('backButton');
+        const headerSubtitle = document.getElementById('headerSubtitle');
+        const amountTitle = document.getElementById('amountTitle');
+        const customAmount = document.getElementById('customAmount');
+        const stopLossValue = document.getElementById('stopLossValue');
+        const stopWinValue = document.getElementById('stopWinValue');
+        const profitAmount = document.getElementById('profitAmount');
+        const currencyOptions = document.querySelectorAll('.currency-option');
+        const amountOptions = document.querySelectorAll('.amount-option');
+        const assetsGrid = document.getElementById('assetsGrid');
+        const selectedAssetName = document.getElementById('selectedAssetName');
+        const selectedAssetPair = document.getElementById('selectedAssetPair');
+        const walletBalance = document.getElementById('walletBalance');
+        const walletBalanceBtn = document.getElementById('walletBalanceBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const multiplierItems = document.querySelectorAll('.multiplier-item');
+        const timeOptions = document.querySelectorAll('.time-option');
+        const historyModal = document.getElementById('historyModal');
+        const closeModal = document.getElementById('closeModal');
+        const historyList = document.getElementById('historyList');
+        const notificationContainer = document.getElementById('notificationContainer');
+
+        // Assets data with exact images from the original site
+        const assets = [
+            { 
+                id: 'btc', 
+                name: 'BITCOIN', 
+                pair: 'BTC/USD', 
+                image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAASFBMVEVHcEz3kxr3kxr3kxr3kxr3kxr3kxr3kxr3kxr3jAD3khX92734pU34nDP////95tL80qz7xZT+8ub5r2T3kQ33kxr3kxr6uXuN5P8aAAAAF3RSTlMAL2qjBor/vtb////////////////2JbbIuikAAAD7SURBVHgBhZJHkoUwDAVNEsjGz9n//jcdTGmIE3rbyiV10vXDRt+pF+NEB9N4dz3d6K9upgfz6RYSmEnTzvLI08TG8Cp2vvezzHAMz5e+o1QMiB4hIWUJbjPLDjk57CTWstEmC4nlCLQAR2KVqiRoAhxrD0Tp2p3r8wcIrBmApPZqOqTfZOYEgL+bDoeMED4iB5HSMhmgLSry2IRTa8ktPxxle9kyOGBl3cZyx43qpWFYyUbAiKxyBL1nCmumRjnOl9nCm9uwk9o4Dm89mCyLo+aOkQzHyFo/XmWWwtqm/HqU40306ZZ/H+yf1xSmQkKZ1JvaT8Mw9VUdfAG5uBUIY0iOdgAAAABJRU5ErkJggg==',
+                color: '#F7931A' 
+            },
+            { 
+                id: 'eth', 
+                name: 'ETHEREUM', 
+                pair: 'ETH/USD', 
+                image: 'https://www.aiautotrading.tech/ethereum-eth.svg',
+                color: '#627EEA' 
+            },
+            { 
+                id: 'sol', 
+                name: 'SOLANA', 
+                pair: 'SOL/USD', 
+                image: 'https://www.aiautotrading.tech/_next/image?url=%2Fsolana.png&w=32&q=75',
+                color: '#00FFA3' 
+            },
+            { 
+                id: 'usdbrl', 
+                name: 'USD/BRL', 
+                pair: 'USD/BRL', 
+                image: 'https://www.aiautotrading.tech/_next/image?url=%2Fusdbrl.png&w=32&q=75',
+                color: '#009639' 
+            },
+            { 
+                id: 'usdjpy', 
+                name: 'USD/JPY', 
+                pair: 'USD/JPY', 
+                image: 'https://www.aiautotrading.tech/_next/image?url=%2Fusdjpy.png&w=32&q=75',
+                color: '#BC002D' 
+            },
+            { 
+                id: 'eurusd', 
+                name: 'EUR/USD', 
+                pair: 'EUR/USD', 
+                image: 'https://www.aiautotrading.tech/_next/image?url=%2Feurusd.png%3Fv%3D2&w=32&q=75',
+                color: '#003399' 
+            }
+        ];
+
+        // State
+        let isLoggedIn = false;
+        let currentCurrency = 'USD';
+        let selectedAmount = '500';
+        let sessionProfit = 0;
+        let walletAmountUSD = 1000.00; // Saldo base em USD
+        let walletAmountBRL = 0; // Será calculado com base na taxa de câmbio
+        let selectedAsset = assets[0];
+        let selectedMultiplier = 1;
+        let selectedTime = 30; // 30 segundos padrão
+        let tradeHistory = [];
+        let currentTradeInterval = null;
+        
+        // Taxa de câmbio simulada (API fictícia)
+        let exchangeRate = 5.20; // 1 USD = 5.20 BRL
+
+        // Inicializar saldo em BRL
+        walletAmountBRL = walletAmountUSD * exchangeRate;
+
+        // Initialize assets grid
+        function initializeAssets() {
+            assetsGrid.innerHTML = '';
+            assets.forEach(asset => {
+                const assetElement = document.createElement('div');
+                assetElement.className = 'asset-option';
+                if (asset.id === selectedAsset.id) {
+                    assetElement.classList.add('selected');
+                }
+                assetElement.innerHTML = `
+                    <div class="asset-icon">
+                        <img src="${asset.image}" alt="${asset.name}" onerror="this.src='https://via.placeholder.com/40/344563/ffffff?text=?'">
+                    </div>
+                    <div class="asset-name">${asset.name}</div>
+                    <div class="asset-pair">${asset.pair}</div>
+                `;
+                assetElement.addEventListener('click', () => selectAsset(asset));
+                assetsGrid.appendChild(assetElement);
+            });
+        }
+
+        // Select asset
+        function selectAsset(asset) {
+            selectedAsset = asset;
+            selectedAssetName.textContent = asset.name;
+            selectedAssetPair.textContent = asset.pair;
+            
+            // Update asset options UI
+            document.querySelectorAll('.asset-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+        }
+
+        // Multiplier selection
+        multiplierItems.forEach(item => {
+            item.addEventListener('click', function() {
+                multiplierItems.forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedMultiplier = parseInt(this.getAttribute('data-multiplier'));
+            });
+        });
+
+        // Time selection
+        timeOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                timeOptions.forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedTime = parseInt(this.getAttribute('data-time'));
+            });
+        });
+
+        // Currency selection
+        currencyOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                currencyOptions.forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                currentCurrency = this.getAttribute('data-currency');
+                updateCurrency();
+            });
+        });
+
+        // Amount selection
+        amountOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                amountOptions.forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedAmount = this.getAttribute('data-amount');
+                updateAmountDisplay();
+            });
+        });
+
+        // Custom amount input
+        customAmount.addEventListener('input', function() {
+            if (this.value) {
+                amountOptions.forEach(opt => opt.classList.remove('selected'));
+                selectedAmount = this.value;
+                updateAmountDisplay();
+            }
+        });
+
+        // Update currency display
+        function updateCurrency() {
+            const currencySymbol = currentCurrency === 'USD' ? 'USD' : 'BRL';
+            
+            // Update amount options
+            amountOptions.forEach(option => {
+                const amount = option.getAttribute('data-amount');
+                option.textContent = `${currencySymbol} ${amount}`;
+            });
+            
+            // Update custom amount placeholder
+            customAmount.placeholder = 'Personalizado';
+            
+            // Update amount title
+            updateAmountDisplay();
+            
+            // Update trade values
+            stopLossValue.textContent = `${currencySymbol} 200`;
+            stopWinValue.textContent = `${currencySymbol} 200`;
+            
+            // Update profit
+            updateProfitDisplay();
+            
+            // Update wallet balance
+            updateWalletDisplay();
+        }
+
+        // Update amount display
+        function updateAmountDisplay() {
+            const currencySymbol = currentCurrency === 'USD' ? 'USD' : 'BRL';
+            amountTitle.textContent = `${currencySymbol} ${selectedAmount}`;
+        }
+
+        // Update wallet display
+        function updateWalletDisplay() {
+            const displayAmount = currentCurrency === 'USD' ? walletAmountUSD : walletAmountBRL;
+            const formattedAmount = displayAmount.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            walletBalance.textContent = `${currentCurrency} ${formattedAmount}`;
+        }
+
+        // Update profit display
+        function updateProfitDisplay() {
+            const displayProfit = currentCurrency === 'USD' ? sessionProfit : sessionProfit * exchangeRate;
+            const formattedProfit = displayProfit.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            profitAmount.textContent = `${currentCurrency} ${formattedProfit}`;
+        }
+
+        // Update wallet balance after trade
+        function updateWalletBalance(amountUSD) {
+            // Atualizar saldo em USD
+            walletAmountUSD += amountUSD;
+            
+            // Atualizar saldo em BRL com base na taxa de câmbio
+            walletAmountBRL = walletAmountUSD * exchangeRate;
+            
+            // Atualizar exibição
+            updateWalletDisplay();
+            
+            // Atualizar lucro da sessão
+            sessionProfit += amountUSD;
+            updateProfitDisplay();
+            
+            // Efeito visual para ganho/perda
+            if (amountUSD > 0) {
+                walletBalance.style.color = '#0fcc45';
+                profitAmount.style.color = '#0fcc45';
+                setTimeout(() => {
+                    walletBalance.style.color = '';
+                    profitAmount.style.color = '#0fcc45'; // Mantém a cor padrão do lucro
+                }, 1000);
+            } else if (amountUSD < 0) {
+                walletBalance.style.color = '#ff4d4d';
+                profitAmount.style.color = '#ff4d4d';
+                setTimeout(() => {
+                    walletBalance.style.color = '';
+                    profitAmount.style.color = sessionProfit >= 0 ? '#0fcc45' : '#ff4d4d';
+                }, 1000);
+            }
+        }
+
+        // Show notification
+        function showNotification(title, message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div class="notification-icon">
+                    ${type === 'success' ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-exclamation-circle"></i>'}
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">${title}</div>
+                    <div class="notification-message">${message}</div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="notificationProgress"></div>
+                    </div>
+                </div>
+                <button class="notification-close"><i class="fas fa-times"></i></button>
+            `;
+            
+            notificationContainer.appendChild(notification);
+            
+            // Progress bar animation
+            const progressBar = notification.querySelector('.progress-bar');
+            let width = 0;
+            const interval = setInterval(() => {
+                if (width >= 100) {
+                    clearInterval(interval);
+                    closeNotification(notification);
+                } else {
+                    width += 1;
+                    progressBar.style.width = width + '%';
+                }
+            }, 50); // 5 seconds total
+            
+            // Close button
+            const closeBtn = notification.querySelector('.notification-close');
+            closeBtn.addEventListener('click', () => {
+                clearInterval(interval);
+                closeNotification(notification);
+            });
+            
+            // Auto close after 5 seconds
+            setTimeout(() => {
+                clearInterval(interval);
+                closeNotification(notification);
+            }, 5000);
+        }
+
+        // Close notification
+        function closeNotification(notification) {
+            notification.style.transform = 'translateX(100%)';
+            notification.style.opacity = '0';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }
+
+        // Add trade to history
+        function addToHistory(asset, amount, multiplier, result, profit, profitPercent, time) {
+            const historyItem = {
+                id: Date.now(),
+                asset: asset,
+                amount: amount,
+                multiplier: multiplier,
+                result: result, // 'win' or 'loss'
+                profit: profit,
+                profitPercent: profitPercent,
+                timestamp: new Date(),
+                currency: currentCurrency,
+                time: time
+            };
+            
+            tradeHistory.unshift(historyItem); // Add to beginning of array
+            updateHistoryDisplay();
+        }
+
+        // Update history display
+        function updateHistoryDisplay() {
+            historyList.innerHTML = '';
+            
+            if (tradeHistory.length === 0) {
+                historyList.innerHTML = '<div style="text-align: center; padding: 20px; color: #a0a0a0;">Nenhuma operação realizada ainda</div>';
+                return;
+            }
+            
+            tradeHistory.forEach(item => {
+                const historyElement = document.createElement('div');
+                historyElement.className = 'history-item';
+                
+                const profitClass = item.result === 'win' ? 'profit-positive' : 'profit-negative';
+                const profitSign = item.result === 'win' ? '+' : '';
+                const profitText = `${profitSign}${item.currency} ${item.profit.toFixed(2)} (${profitSign}${item.profitPercent.toFixed(2)}%)`;
+                
+                const timeString = item.timestamp.toLocaleTimeString('pt-BR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                historyElement.innerHTML = `
+                    <div class="history-asset">
+                        <div class="history-icon">
+                            <img src="${item.asset.image}" alt="${item.asset.name}">
+                        </div>
+                        <div class="history-details">
+                            <div>${item.asset.name} (${item.multiplier}x)</div>
+                            <div class="history-time">${timeString} - ${formatTime(item.time)}</div>
+                        </div>
+                    </div>
+                    <div class="history-profit ${profitClass}">${profitText}</div>
+                `;
+                
+                historyList.appendChild(historyElement);
+            });
+        }
+
+        // Format time for display
+        function formatTime(seconds) {
+            if (seconds < 60) {
+                return `${seconds}s`;
+            } else if (seconds < 3600) {
+                return `${Math.floor(seconds / 60)}m`;
+            } else if (seconds < 86400) {
+                return `${Math.floor(seconds / 3600)}h`;
+            } else {
+                return `${Math.floor(seconds / 86400)}d`;
+            }
+        }
+
+        // Show history modal
+        walletBalanceBtn.addEventListener('click', function() {
+            if (isLoggedIn) {
+                historyModal.style.display = 'flex';
+            }
+        });
+
+        // Close modal
+        closeModal.addEventListener('click', function() {
+            historyModal.style.display = 'none';
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target === historyModal) {
+                historyModal.style.display = 'none';
+            }
+        });
+
+        // Logout function
+        logoutBtn.addEventListener('click', function() {
+            isLoggedIn = false;
+            headerSubtitle.textContent = 'Conecte Sua Conta Astron';
+            actionButton.textContent = 'CONECTE SUA CONTA PRIMEIRO';
+            logoutBtn.style.display = 'none';
+            
+            // Reset session profit
+            sessionProfit = 0;
+            updateProfitDisplay();
+            
+            // Show login form
+            tradingInterface.style.display = 'block';
+            loginForm.style.display = 'none';
+        });
+
+        // Simular atualização da taxa de câmbio (como se fosse uma API)
+        function updateExchangeRate() {
+            // Simular uma variação aleatória na taxa de câmbio
+            const variation = (Math.random() - 0.5) * 0.1; // Variação de +/- 5%
+            exchangeRate = Math.max(4.5, Math.min(5.8, exchangeRate + variation));
+            
+            // Atualizar saldo em BRL com a nova taxa
+            walletAmountBRL = walletAmountUSD * exchangeRate;
+            
+            // Atualizar exibição se a moeda atual for BRL
+            if (currentCurrency === 'BRL') {
+                updateWalletDisplay();
+                updateProfitDisplay();
+            }
+            
+            // Agendar próxima atualização (a cada 30 segundos)
+            setTimeout(updateExchangeRate, 30000);
+        }
+
+        // Action button click
+        actionButton.addEventListener('click', function() {
+            if (!isLoggedIn) {
+                // Show login form
+                tradingInterface.style.display = 'none';
+                loginForm.style.display = 'block';
+            } else {
+                // Start trading
+                startTrading();
+            }
+        });
+
+        // Login button click
+        loginButton.addEventListener('click', function() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (email && password) {
+                // Simulate login
+                isLoggedIn = true;
+                headerSubtitle.textContent = 'Bem-vindo de volta!';
+                actionButton.textContent = 'INICIAR TRADING';
+                logoutBtn.style.display = 'block';
+                
+                // Show trading interface
+                tradingInterface.style.display = 'block';
+                loginForm.style.display = 'none';
+            } else {
+                alert('Por favor, preencha todos os campos.');
+            }
+        });
+
+        // Back button click
+        backButton.addEventListener('click', function() {
+            tradingInterface.style.display = 'block';
+            loginForm.style.display = 'none';
+        });
+
+        // Start trading simulation
+        function startTrading() {
+            // Check if user has enough balance
+            const tradeAmount = parseFloat(selectedAmount);
+            const currentBalance = currentCurrency === 'USD' ? walletAmountUSD : walletAmountBRL;
+            
+            if (tradeAmount > currentBalance) {
+                showNotification('Saldo Insuficiente', 'Você não tem saldo suficiente para realizar esta operação.', 'error');
+                return;
+            }
+
+            actionButton.disabled = true;
+            actionButton.textContent = 'TRADING EM ANDAMENTO...';
+            
+            // Show initial notification
+            showNotification('Operação Iniciada', `Trading de ${selectedAsset.name} (${selectedMultiplier}x) por ${formatTime(selectedTime)} iniciado.`);
+            
+            // Calculate simulation time (shorter for demo purposes)
+            const simulationTime = Math.min(selectedTime, 10) * 1000; // Max 10 seconds for demo
+            
+            // Start progress simulation
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 100 / (simulationTime / 100);
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
+                    finishTrading(tradeAmount);
+                }
+            }, 100);
+            
+            // Store interval to clear if needed
+            currentTradeInterval = progressInterval;
+        }
+
+        // Finish trading simulation
+        function finishTrading(tradeAmount) {
+            // Clear any existing interval
+            if (currentTradeInterval) {
+                clearInterval(currentTradeInterval);
+                currentTradeInterval = null;
+            }
+            
+            // Calculate base profit based on multiplier and asset volatility
+            let baseProfitPercentage = 0;
+            let volatility = 1.0;
+            
+            // Define base profit percentage based on multiplier
+            switch(selectedMultiplier) {
+                case 1: baseProfitPercentage = 0.5; break; // 0.5% for conservative
+                case 2: baseProfitPercentage = 1.5; break; // 1.5% for moderate
+                case 30: baseProfitPercentage = 5.0; break; // 5% for aggressive
+            }
+            
+            // Adjust volatility based on asset
+            switch(selectedAsset.id) {
+                case 'btc': volatility = 1.5; break;
+                case 'eth': volatility = 1.3; break;
+                case 'sol': volatility = 2.0; break;
+                case 'usdbrl': volatility = 0.8; break;
+                case 'usdjpy': volatility = 0.7; break;
+                case 'eurusd': volatility = 0.6; break;
+            }
+            
+            // Calculate profit percentage with volatility and random factor
+            const randomFactor = (Math.random() - 0.5) * 2; // -1 to 1
+            const profitPercentage = baseProfitPercentage * volatility * randomFactor;
+            
+            // Calculate actual profit in USD
+            const profitUSD = (tradeAmount * profitPercentage) / 100;
+            
+            // Determine if it's a win or loss
+            const result = profitUSD > 0 ? 'win' : 'loss';
+            
+            // Update wallet balance
+            updateWalletBalance(profitUSD);
+            
+            // Add to history
+            addToHistory(selectedAsset, tradeAmount, selectedMultiplier, result, 
+                        currentCurrency === 'USD' ? profitUSD : profitUSD * exchangeRate,
+                        profitPercentage, selectedTime);
+            
+            // Reset button
+            actionButton.disabled = false;
+            actionButton.textContent = 'INICIAR TRADING';
+            
+            // Show result notification
+            if (profitUSD > 0) {
+                showNotification(
+                    'Operação Lucrativa!', 
+                    `Trading de ${selectedAsset.name} (${selectedMultiplier}x) concluído! Lucro: ${currentCurrency} ${profitUSD.toFixed(2)} (${profitPercentage.toFixed(2)}%)`,
+                    'success'
+                );
+            } else {
+                showNotification(
+                    'Operação com Prejuízo', 
+                    `Trading de ${selectedAsset.name} (${selectedMultiplier}x) concluído! Prejuízo: ${currentCurrency} ${Math.abs(profitUSD).toFixed(2)} (${profitPercentage.toFixed(2)}%)`,
+                    'error'
+                );
+            }
+        }
+
+        // Initialize
+        initializeAssets();
+        updateCurrency();
+        updateAmountDisplay();
+        updateExchangeRate(); // Iniciar atualização da taxa de câmbio
+    </script>
+</body>
+</html>
